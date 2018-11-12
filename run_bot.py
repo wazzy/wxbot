@@ -42,7 +42,7 @@ def reply_my_friend(msg):
         replys = agent.reply(text)
         certainty = replys[0]
         if not debug and certainty < 0.9:
-            msg.chat.send('这个问题劳资不知道， 问人事组的王傻子去~')
+            msg.chat.send('这个问题我不知道诶，问人事组的小姐姐们吧')
             return
         question, answer = replys[1]
         print('matched: '+question)
