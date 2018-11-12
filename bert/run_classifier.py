@@ -537,20 +537,24 @@ def file_based_input_fn_builder(input_file, seq_length, is_training,
 
   def input_fn(params):
     """The actual input function."""
+    # print('arrive input_fn 1')
     batch_size = params["batch_size"]
-
+    # print('arrive input_fn 2')
     # For training, we want a lot of parallel reading and shuffling.
     # For eval, we want no shuffling and parallel reading doesn't matter.
     d = tf.data.TFRecordDataset(input_file)
+    # print('arrive input_fn 3')
     if is_training:
       d = d.repeat()
       d = d.shuffle(buffer_size=100)
+      # print('arrive input_fn 4')
 
     d = d.apply(
         tf.contrib.data.map_and_batch(
             lambda record: _decode_record(record, name_to_features),
             batch_size=batch_size,
             drop_remainder=drop_remainder))
+    # print('finish input_fn ')
 
     return d
 
@@ -946,3 +950,4 @@ if __name__ == "__main__":
   flags.mark_flag_as_required("bert_config_file")
   flags.mark_flag_as_required("output_dir")
   tf.app.run()
+

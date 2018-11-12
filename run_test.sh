@@ -1,4 +1,4 @@
-home_dir=~/personal/github/wxbot/
+home_dir=/home/aigroup/share/ycl/wxbot
 BERT_BASE_DIR=$home_dir/chinese_L-12_H-768_A-12
 GLUE_DIR=$home_dir/glue_data
 
@@ -20,7 +20,7 @@ GLUE_DIR=$home_dir/glue_data
 
 TRAINED_CLASSIFIER=$home_dir/tmp/ynt_output/model.ckpt-119
 
-python3 run_test.py \
+python3 foo.py \
   --data_dir=$GLUE_DIR/YNT \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
   --bert_config_file=$BERT_BASE_DIR/bert_config.json \

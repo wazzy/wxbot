@@ -1,4 +1,4 @@
-home_dir=~/personal/github/wxbot/
+home_dir=/home/aigroup/share/ycl/wxbot/
 BERT_BASE_DIR=$home_dir/chinese_L-12_H-768_A-12
 GLUE_DIR=$home_dir/glue_data
 

@@ -1,9 +1,12 @@
 import tensorflow as tf
 import os
 from bert.classifier import *
-
-classifier = Classifier()
-
+from agent import *
+from wxpy import *
+# classifier = Classifier()
+bot = Bot(console_qr=True)
+friend = bot.friends().search('刘杰')[0]
+agent = PairMatchAgent()
 
 def preprocess(sentence, qa_file='qa_pairs.txt'):
     save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
@@ -65,7 +68,53 @@ while True:
     sentence = input()
     if sentence is None or len(sentence.split()) == 0:
         break
-    qa_pairs = preprocess(sentence)
-    predictions = classifier.predict_online()
-    ranked_results = sort_and_retrive(predictions, qa_pairs)
-    print(ranked_results[0][1])
+    # qa_pairs = preprocess(sentence)
+    # predictions = classifier.predict_online()
+    # ranked_results = sort_and_retrive(predictions, qa_pairs)
+    # print(ranked_results[0][1])
+
+    text = sentence
+    print('text received: ' + text)
+    # if text.startswith('小姐姐'):
+    #     print('chitchat mode on')
+    #     turing.do_reply(msg)
+    #     return
+
+    run = False
+
+    if text.startswith('debug:'):
+        text = text[6:]
+        print('debug mode on')
+        debug = True
+    else:
+        print('debug mode off')
+        debug = False
+
+    if debug:
+        run = True
+
+    if text.startswith('小助手'):
+        print('assistant mode on')
+        text = text.split('小助手')[-1].strip()
+        run = True
+
+    if run:
+        print('running')
+        replys = agent.reply(text)
+        certainty = replys[0]
+        question, answer = replys[1]
+        print(question)
+        print(answer)
+        # if debug:
+        #     msg.chat.send('certainty: %s' % certainty)
+        #     msg.chat.send('matched question: ' + question)
+        #     msg.chat.send('answer: ')
+        # 
+        # for line in answer:
+        #     msg.chat.send(line)
+        for line in answer:
+            friend.send(line)
+    else:
+        print('no running')
+
+

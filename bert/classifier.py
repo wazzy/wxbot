@@ -103,30 +103,149 @@ def get_assignment_map_from_checkpoint(tvars, init_checkpoint):
 class Classifier:
     def __init__(self):
         self.processor = MyProcessor()
-        # self.estimator = self.create_estimator()
+        self.estimator = self.create_estimator()
         # self.sess = tf.train.MonitoredSession()
-        self.sess = tf.Session()
-        self.initialized = False
+        # self.sess = tf.Session()
+        # self.initialized = False
 
-    def model_fn(self, features, bert_config, num_labels, init_checkpoint):
-        input_ids = features["input_ids"]
-        input_mask = features["input_mask"]
-        segment_ids = features["segment_ids"]
-        label_ids = features["label_ids"]
-        with tf.variable_scope('model_body', reuse=tf.AUTO_REUSE):
-            (total_loss, per_example_loss, logits, probabilities) = create_model(
-                bert_config, False, input_ids, input_mask, segment_ids, label_ids,
-                num_labels, False)
+    # def model_fn(self, features, bert_config, num_labels, init_checkpoint):
+    #     input_ids = features["input_ids"]
+    #     input_mask = features["input_mask"]
+    #     segment_ids = features["segment_ids"]
+    #     label_ids = features["label_ids"]
+    #     with tf.variable_scope('model_body', reuse=tf.AUTO_REUSE):
+    #         (total_loss, per_example_loss, logits, probabilities) = create_model(
+    #             bert_config, False, input_ids, input_mask, segment_ids, label_ids,
+    #             num_labels, False)
+    # 
+    #     tvars = tf.trainable_variables()
+    # 
+    #     if not self.initialized:
+    #         (assignment_map, _
+    #          ) = get_assignment_map_from_checkpoint(tvars, init_checkpoint)
+    # 
+    #         tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+    #     return probabilities
+    # 
+    # def predict_online(self):
+    #     print('location: classifier.predict_online')
+    #     # tf.reset_default_graph()
+    #     predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
+    #     print('arrive stop 1')
+    #     predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
+    #     print('arrive stop 2')
+    #     label_list = self.processor.get_labels()
+    #     print('arrive stop 3')
+    #     tokenizer = tokenization.FullTokenizer(
+    #         vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
+    #     print('arrive stop 4')
+    # 
+    #     file_based_convert_examples_to_features(predict_examples, label_list,
+    #                                             FLAGS.max_seq_length, tokenizer, predict_file)
+    #     print('arrive stop 5')
+    # 
+    #     predict_input_fn = file_based_input_fn_builder(
+    #         input_file=predict_file,
+    #         seq_length=FLAGS.max_seq_length,
+    #         is_training=False,
+    #         drop_remainder=False)
+    #     print('arrive stop 6')
+    #     features = self._get_features_from_input_fn(predict_input_fn, FLAGS.predict_batch_size)
+    #     print('arrive stop 7')
+    # 
+    #     bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
+    #     print('arrive stop 8')
+    #     probabilities = self.model_fn(
+    #                                   features=features,
+    #                                   bert_config=bert_config,
+    #                                   init_checkpoint=FLAGS.init_checkpoint,
+    #                                   num_labels=len(label_list)
+    #                                   )
+    #     print('arrive stop 9')
+    #     # for name in names:
+    #     #     print(name)
+    # 
+    #     if not self.initialized:
+    #         self.sess.run(tf.global_variables_initializer())
+    #         # self.sess.run(assignment_map)
+    #         self.initialized = True
+    #         print('arrive stop 10')
+    #     predictions = []
+    #     while True:
+    #         try:
+    #             probs = self.sess.run([probabilities])[0]
+    #             predictions += list(probs)
+    #             # print(predictions)
+    #             print('arrive stop 11')
+    #         except:
+    #             break
+    #     print('finish classifier.predict_online')
+    #     return np.array(predictions)
+    # 
+    # def _validate_features_in_predict_input(self, result):
+    #     if not _has_dataset_or_queue_runner(result):
+    #         logging.warning('Input graph does not use tf.data.Dataset or contain a '
+    #                         'QueueRunner. That means predict yields forever. '
+    #                         'This is probably a mistake.')
+    # 
+    # def _get_features_from_input_fn(self, input_fn, batch_size):
+    #     """Extracts the `features` from return values of `input_fn`."""
+    #     print('arrive substop 1')
+    #     params = {"batch_size": batch_size}
+    #     print('arrive substop 2')
+    #     result = input_fn(params)
+    #     print('arrive substop 3')
+    #     iterator = result.make_initializable_iterator()
+    #     print('arrive substop 4')
+    #     self.sess.run(iterator.initializer)
+    #     print('arrive substop 5')
+    #     result = iterator.get_next()
+    #     print('arrive substop 6')
+    #     # result, _, _ = estimator_util.parse_input_fn_result(result)
+    #     self._validate_features_in_predict_input(result)
+    #     print('finish substops')
+    #     return result
 
-        tvars = tf.trainable_variables()
+    def create_estimator(self):
+        bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
+        label_list = self.processor.get_labels()
+        is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
+        tpu_cluster_resolver = None
+        run_config = tf.contrib.tpu.RunConfig(
+            cluster=tpu_cluster_resolver,
+            master=FLAGS.master,
+            model_dir=FLAGS.output_dir,
+            save_checkpoints_steps=FLAGS.save_checkpoints_steps,
+            tpu_config=tf.contrib.tpu.TPUConfig(
+                iterations_per_loop=FLAGS.iterations_per_loop,
+                num_shards=FLAGS.num_tpu_cores,
+                per_host_input_for_training=is_per_host))
 
-        (assignment_map, initialized_variable_names
-         ) = get_assignment_map_from_checkpoint(tvars, init_checkpoint)
-        tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
-        return assignment_map, probabilities, initialized_variable_names
+        num_train_steps = None
+        num_warmup_steps = None
 
-    def predict_online(self):
-        # tf.reset_default_graph()
+        model_fn = model_fn_builder(
+            bert_config=bert_config,
+            num_labels=len(label_list),
+            init_checkpoint=FLAGS.init_checkpoint,
+            learning_rate=FLAGS.learning_rate,
+            num_train_steps=num_train_steps,
+            num_warmup_steps=num_warmup_steps,
+            use_tpu=FLAGS.use_tpu,
+            use_one_hot_embeddings=FLAGS.use_tpu)
+
+        # If TPU is not available, this will fall back to normal Estimator on CPU
+        # or GPU.
+        estimator = tf.contrib.tpu.TPUEstimator(
+            use_tpu=FLAGS.use_tpu,
+            model_fn=model_fn,
+            config=run_config,
+            train_batch_size=FLAGS.train_batch_size,
+            eval_batch_size=FLAGS.eval_batch_size,
+            predict_batch_size=FLAGS.predict_batch_size)
+        return estimator
+
+    def predict(self):
         predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
         predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
         label_list = self.processor.get_labels()
@@ -135,108 +254,13 @@ class Classifier:
         file_based_convert_examples_to_features(predict_examples, label_list,
                                                 FLAGS.max_seq_length, tokenizer, predict_file)
 
+        predict_drop_remainder = True if FLAGS.use_tpu else False
         predict_input_fn = file_based_input_fn_builder(
             input_file=predict_file,
             seq_length=FLAGS.max_seq_length,
             is_training=False,
-            drop_remainder=False)
-        features = self._get_features_from_input_fn(predict_input_fn, FLAGS.predict_batch_size)
+            drop_remainder=predict_drop_remainder)
 
-        bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
-        assignment_map, probabilities, names = self.model_fn(
-                                                      features=features,
-                                                      bert_config=bert_config,
-                                                      init_checkpoint=FLAGS.init_checkpoint,
-                                                      num_labels=len(label_list)
-                                                      )
-        # for name in names:
-        #     print(name)
-
-        # if not self.initialized:
-        #     self.sess.run(tf.global_variables_initializer())
-        #     self.sess.run(assignment_map)
-        #     self.initialized = True
-        predictions = []
-        while True:
-            try:
-                probs = self.sess.run([probabilities])[0]
-                predictions += list(probs)
-                # print(predictions)
-            except:
-                break
-        return np.array(predictions)
-
-    def _validate_features_in_predict_input(self, result):
-        if not _has_dataset_or_queue_runner(result):
-            logging.warning('Input graph does not use tf.data.Dataset or contain a '
-                            'QueueRunner. That means predict yields forever. '
-                            'This is probably a mistake.')
-
-    def _get_features_from_input_fn(self, input_fn, batch_size):
-        """Extracts the `features` from return values of `input_fn`."""
-        params = {"batch_size": batch_size}
-        result = input_fn(params)
-        iterator = result.make_initializable_iterator()
-        self.sess.run(iterator.initializer)
-        result = iterator.get_next()
-        # result, _, _ = estimator_util.parse_input_fn_result(result)
-        self._validate_features_in_predict_input(result)
+        result = self.estimator.predict(input_fn=predict_input_fn)
         return result
 
-    # def create_estimator(self):
-    #     bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
-    #     label_list = self.processor.get_labels()
-    #     is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
-    #     tpu_cluster_resolver = None
-    #     run_config = tf.contrib.tpu.RunConfig(
-    #         cluster=tpu_cluster_resolver,
-    #         master=FLAGS.master,
-    #         model_dir=FLAGS.output_dir,
-    #         save_checkpoints_steps=FLAGS.save_checkpoints_steps,
-    #         tpu_config=tf.contrib.tpu.TPUConfig(
-    #             iterations_per_loop=FLAGS.iterations_per_loop,
-    #             num_shards=FLAGS.num_tpu_cores,
-    #             per_host_input_for_training=is_per_host))
-    #
-    #     num_train_steps = None
-    #     num_warmup_steps = None
-    #
-    #     model_fn = model_fn_builder(
-    #         bert_config=bert_config,
-    #         num_labels=len(label_list),
-    #         init_checkpoint=FLAGS.init_checkpoint,
-    #         learning_rate=FLAGS.learning_rate,
-    #         num_train_steps=num_train_steps,
-    #         num_warmup_steps=num_warmup_steps,
-    #         use_tpu=FLAGS.use_tpu,
-    #         use_one_hot_embeddings=FLAGS.use_tpu)
-    #
-    #     # If TPU is not available, this will fall back to normal Estimator on CPU
-    #     # or GPU.
-    #     estimator = tf.contrib.tpu.TPUEstimator(
-    #         use_tpu=FLAGS.use_tpu,
-    #         model_fn=model_fn,
-    #         config=run_config,
-    #         train_batch_size=FLAGS.train_batch_size,
-    #         eval_batch_size=FLAGS.eval_batch_size,
-    #         predict_batch_size=FLAGS.predict_batch_size)
-    #     return estimator
-
-    # def predict(self):
-    #     predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
-    #     predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
-    #     label_list = self.processor.get_labels()
-    #     tokenizer = tokenization.FullTokenizer(
-    #         vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
-    #     file_based_convert_examples_to_features(predict_examples, label_list,
-    #                                             FLAGS.max_seq_length, tokenizer, predict_file)
-    #
-    #     predict_drop_remainder = True if FLAGS.use_tpu else False
-    #     predict_input_fn = file_based_input_fn_builder(
-    #         input_file=predict_file,
-    #         seq_length=FLAGS.max_seq_length,
-    #         is_training=False,
-    #         drop_remainder=predict_drop_remainder)
-    #
-    #     result = self.estimator.predict(input_fn=predict_input_fn)
-    #     return result

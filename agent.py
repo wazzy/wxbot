@@ -79,10 +79,11 @@ class PairMatchAgent:
                 fout.write(sentence+'\n')
 
     def reply(self, sentence):
+        # print('location: agent.reply')
         # return a list of sentences
         qa_pairs = preprocess(sentence)
         # predict based on file generrated by
-        predictions = self.classifier.predict_online()
+        predictions = self.classifier.predict()
         ranked_results = sort_and_retrive(predictions, qa_pairs)
         # for k, v in self.qa_pairs:
         #     if k in sentence:
@@ -92,15 +93,17 @@ class PairMatchAgent:
         # self.record(sentence, mode='missed')
 
         # return ['本宝宝还小，知道的东西不多，这个问题去问人事组的小姐姐们吧～']
+        # print('finish agent.reply')
         return ranked_results[0]
 
 
-if __name__ == '__main__':
-    agent = PairMatchAgent()
-    while True:
-        msg = input()
-        if msg is None:
-            break
-        ans = agent.reply(msg)
-        for an in ans:
-            print(an)
+# if __name__ == '__main__':
+#     agent = PairMatchAgent()
+#     while True:
+#         msg = input()
+#         if msg is None:
+#             break
+#         ans = agent.reply(msg)
+#         for an in ans:
+#             print(an)
+
