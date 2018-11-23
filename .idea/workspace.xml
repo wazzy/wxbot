@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0025aae7-a039-4cbc-8ca1-f745607cf389" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/bert/run_classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/bert/run_classifier.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/agent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_client_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_export.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_export.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,34 +17,36 @@
     <session id="68647204">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="2" />
-          <entry key="project.open.time.0" value="1" />
+          <entry key="project.closed" value="3" />
+          <entry key="project.open.time.0" value="2" />
           <entry key="project.open.time.16" value="1" />
           <entry key="project.open.time.22" value="1" />
           <entry key="project.open.time.25" value="1" />
-          <entry key="project.opened" value="4" />
+          <entry key="project.opened" value="5" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="11" />
+          <entry key="py" value="12" />
+          <entry key="sh" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="11" />
+          <entry key="PLAIN_TEXT" value="1" />
+          <entry key="Python" value="12" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="dummy" value="11" />
-          <entry key="py" value="1242" />
+          <entry key="dummy" value="16" />
+          <entry key="py" value="2324" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="11" />
-          <entry key="Python" value="1242" />
+          <entry key="PLAIN_TEXT" value="16" />
+          <entry key="Python" value="2324" />
         </counts>
       </usages-collector>
     </session>
@@ -51,8 +56,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bert/classifier.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="588">
-              <caret line="255" lean-forward="true" selection-start-line="255" selection-end-line="255" />
+            <state relative-caret-position="1025">
+              <caret line="257" column="43" selection-start-line="257" selection-start-column="43" selection-end-line="257" selection-end-column="43" />
               <folding>
                 <element signature="e#38#76#0" expanded="true" />
               </folding>
@@ -63,8 +68,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_export.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1519">
-              <caret line="172" column="60" lean-forward="true" selection-start-line="172" selection-start-column="60" selection-end-line="172" selection-end-column="60" />
+            <state relative-caret-position="1709">
+              <caret line="170" lean-forward="true" selection-start-line="170" selection-end-line="170" />
               <folding>
                 <element signature="e#38#76#0" expanded="true" />
               </folding>
@@ -73,40 +78,46 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.local/lib/python3.5/site-packages/tensorflow/python/estimator/export/export.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="797">
-              <caret line="292" lean-forward="true" selection-start-line="292" selection-end-line="292" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.local/lib/python3.5/site-packages/tensorflow/python/estimator/estimator.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="417">
-              <caret line="897" lean-forward="true" selection-start-line="897" selection-end-line="897" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/agent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="664">
-              <caret line="102" column="23" lean-forward="true" selection-start-line="101" selection-start-column="6" selection-end-line="102" selection-end-column="23" />
+            <state relative-caret-position="76">
+              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+              <folding>
+                <element signature="e#0#29#0" expanded="true" />
+                <marker date="1542958867322" expanded="true" signature="2974:3388" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/run_client.py">
+        <entry file="file://$PROJECT_DIR$/run_export.sh">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9">
-              <caret line="46" column="4" selection-start-line="46" selection-start-column="4" selection-end-line="46" selection-end-column="4" />
+            <state relative-caret-position="342">
+              <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/run_bot.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="190">
+              <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/run_client_test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-798">
+              <caret line="45" column="43" lean-forward="true" selection-start-line="45" selection-start-column="43" selection-end-line="45" selection-end-column="43" />
               <folding>
                 <element signature="e#1151#1188#0" expanded="true" />
-                <marker date="1542881910405" expanded="true" signature="4193:6002" ph="..." />
               </folding>
             </state>
           </provider>
@@ -115,8 +126,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bert/run_classifier.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="522">
-              <caret line="517" column="51" lean-forward="true" selection-start-line="517" selection-start-column="51" selection-end-line="517" selection-end-column="51" />
+            <state relative-caret-position="484">
+              <caret line="661" column="37" selection-start-line="661" selection-start-column="37" selection-end-line="661" selection-end-column="37" />
               <folding>
                 <element signature="e#646#684#0" expanded="true" />
               </folding>
@@ -142,7 +153,12 @@
       <find>keys</find>
       <find>max_seq_length</find>
       <find>FLAGS</find>
+      <find>serialized</find>
+      <find>predict_batch_size</find>
     </findStrings>
+    <replaceStrings>
+      <replace>features</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -151,15 +167,15 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/run_test.py" />
-        <option value="$PROJECT_DIR$/agent.py" />
         <option value="$PROJECT_DIR$/run_bot.py" />
         <option value="$PROJECT_DIR$/bert/run_classifier.py" />
         <option value="$PROJECT_DIR$/bert/run_export.py" />
         <option value="$PROJECT_DIR$/bert/classifier.py" />
-        <option value="$PROJECT_DIR$/run_export.py" />
         <option value="$PROJECT_DIR$/resnet_client.py" />
         <option value="$PROJECT_DIR$/bert_client.py" />
         <option value="$PROJECT_DIR$/run_client.py" />
+        <option value="$PROJECT_DIR$/agent.py" />
+        <option value="$PROJECT_DIR$/run_export.py" />
       </list>
     </option>
   </component>
@@ -192,7 +208,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../tensorflow-r1.10" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -225,7 +241,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="64" y="-11" width="1857" height="1092" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24972737" />
@@ -273,40 +289,10 @@
     <entry file="file://$PROJECT_DIR$/run_bot.sh">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_bot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="38">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/run_test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="873">
           <caret line="120" selection-start-line="120" selection-end-line="120" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/agent.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="664">
-          <caret line="102" column="23" lean-forward="true" selection-start-line="101" selection-start-column="6" selection-end-line="102" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bert/classifier.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="588">
-          <caret line="255" lean-forward="true" selection-start-line="255" selection-end-line="255" />
-          <folding>
-            <element signature="e#38#76#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -324,48 +310,85 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bert/run_classifier.py">
+    <entry file="file://$USER_HOME$/.local/lib/python3.5/site-packages/tensorflow/python/estimator/export/export.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="522">
-          <caret line="517" column="51" lean-forward="true" selection-start-line="517" selection-start-column="51" selection-end-line="517" selection-end-column="51" />
-          <folding>
-            <element signature="e#646#684#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="5168">
+          <caret line="292" selection-start-line="292" selection-end-line="292" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/.local/lib/python3.5/site-packages/tensorflow/python/estimator/estimator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="897" lean-forward="true" selection-start-line="897" selection-end-line="897" />
+        <state relative-caret-position="303">
+          <caret line="117" column="6" selection-start-line="117" selection-start-column="6" selection-end-line="117" selection-end-column="6" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.local/lib/python3.5/site-packages/tensorflow/python/estimator/export/export.py">
+    <entry file="file://$PROJECT_DIR$/bert/classifier.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="797">
-          <caret line="292" lean-forward="true" selection-start-line="292" selection-end-line="292" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_export.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1519">
-          <caret line="172" column="60" lean-forward="true" selection-start-line="172" selection-start-column="60" selection-end-line="172" selection-end-column="60" />
+        <state relative-caret-position="1025">
+          <caret line="257" column="43" selection-start-line="257" selection-start-column="43" selection-end-line="257" selection-end-column="43" />
           <folding>
             <element signature="e#38#76#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_client.py">
+    <entry file="file://$PROJECT_DIR$/bert/run_classifier.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9">
-          <caret line="46" column="4" selection-start-line="46" selection-start-column="4" selection-end-line="46" selection-end-column="4" />
+        <state relative-caret-position="484">
+          <caret line="661" column="37" selection-start-line="661" selection-start-column="37" selection-end-line="661" selection-end-column="37" />
+          <folding>
+            <element signature="e#646#684#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_export.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1709">
+          <caret line="170" lean-forward="true" selection-start-line="170" selection-end-line="170" />
+          <folding>
+            <element signature="e#38#76#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_bot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_client_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-798">
+          <caret line="45" column="43" lean-forward="true" selection-start-line="45" selection-start-column="43" selection-end-line="45" selection-end-column="43" />
           <folding>
             <element signature="e#1151#1188#0" expanded="true" />
-            <marker date="1542881910405" expanded="true" signature="4193:6002" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/agent.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="76">
+          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+          <folding>
+            <element signature="e#0#29#0" expanded="true" />
+            <marker date="1542958867322" expanded="true" signature="2974:3388" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_export.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
         </state>
       </provider>
     </entry>

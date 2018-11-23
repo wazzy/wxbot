@@ -34,7 +34,8 @@ import requests
 from bert.classifier import *
 from agent import preprocess
 import json
-
+import numpy as np
+import time
 
 
 # The server URL specifies the endpoint of your server running the ResNet
@@ -77,10 +78,49 @@ def file_based_convert_examples_to_features(
         # features_list.append(features)
     return serialized
 
+# def file_based_convert_examples_to_features(
+#         examples, label_list, max_seq_length, tokenizer, output_file):
+#     """Convert a set of `InputExample`s to a TFRecord file."""
+#     features = collections.OrderedDict()
+#     features['input_ids'] = []
+#     features['input_mask'] = []
+#     features['segment_ids'] = []
+#     features['label_ids'] = []
+#
+#     for (ex_index, example) in enumerate(examples):
+#         if ex_index % 10000 == 0:
+#             tf.logging.info("Writing example %d of %d" % (ex_index, len(examples)))
+#
+#         feature = convert_single_example(ex_index, example, label_list,
+#                                          max_seq_length, tokenizer)
+#         features['input_ids'] += feature.input_ids
+#         features['input_mask'] += feature.input_mask
+#         features['segment_ids'] += feature.segment_ids
+#         features['label_ids'] += [feature.label_id]
+#
+#     def create_int_feature(values):
+#         f = tf.train.Feature(int64_list=tf.train.Int64List(value=list(values)))
+#         return f
+#
+#     features['input_ids'] = create_int_feature(features['input_ids'])
+#     features['input_mask'] = create_int_feature(features['input_mask'])
+#     features['segment_ids'] = create_int_feature(features['segment_ids'])
+#     features['label_ids'] = create_int_feature(features['label_ids'])
+#     tf_example = tf.train.Example(features=tf.train.Features(feature=features))
+#     serialized = tf_example.SerializeToString()
+#     return serialized
+
 
 class Client:
     def __init__(self):
         self.processor = MyProcessor()
+
+    def sort_and_retrive(self, predictions, qa_pairs):
+        res = []
+        for prediction, qa in zip(predictions, qa_pairs):
+            res.append((prediction[1], qa))
+        res.sort(reverse=True)
+        return res
 
     def preprocess(self, sentence, qa_file='qa_pairs.txt'):
         save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
@@ -108,7 +148,7 @@ class Client:
         return qa_pairs
 
     def predict(self, sentence):
-        preprocess(sentence)
+        qa_pairs = preprocess(sentence)
         predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
         predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
         label_list = self.processor.get_labels()
@@ -132,15 +172,45 @@ class Client:
         # iterator = features.make_one_shot_iterator()
         # feature = iterator.get_next()
         # print(type(serialized[0]))
-        serialized_string = b''.join(serialized)
-        predict_request = '{"instances" : [{"b64": "%s"}]}' % base64.b64encode(serialized_string).decode()
-        # predict_request = json.dumps({'examples': serialized[0]})
+
+        init = time.time()
+        start = init
+        # i = 1
+
+        predict_request = '{"instances": ['
+        for i in range(len(serialized)):
+            if i == 0:
+                cur_string = '{"b64": "%s"}' % base64.b64encode(serialized[i]).decode()
+            else:
+                cur_string = ',{"b64": "%s"}' % base64.b64encode(serialized[i]).decode()
+            predict_request += cur_string
+        predict_request += ']}'
         response = requests.post(SERVER_URL, data=predict_request)
-        print(response.text)
+        # print(response.text)
         response.raise_for_status()
-        prediction = response.json()
-        return prediction
-        # print(features_list[0])
+        response = response.json()
+        print(response)
+        cost = time.time() - init
+        print('total time cost: %s s' % cost)
+
+        # for example in serialized:
+        #     predict_request = '{"instances" : [{"b64": "%s"}]}' % base64.b64encode(example).decode()
+        #     # predict_request = json.dumps({'examples': serialized[0]})
+        #     response = requests.post(SERVER_URL, data=predict_request)
+        #     # print(response.text)
+        #     response.raise_for_status()
+        #     prediction = response.json()
+        #     prediction = prediction['predictions'][0]
+        #     predictions.append(prediction)
+        #     cost = time.time() - start
+        #     start = time.time()
+        #     print('step %s time cost: %s s' % (i, cost))
+        #     i += 1
+        # cost = time.time()-init
+        # print('total time cost: %s s' % cost)
+        predictions = response['predictions']
+        result = self.sort_and_retrive(predictions=predictions, qa_pairs=qa_pairs)
+        return result[0]
 
 
 # def main():
@@ -176,5 +246,6 @@ if __name__ == '__main__':
         msg = input()
         if msg is None:
             break
-        response = client.predict(msg)
-        print(response)
+        prediction = client.predict(msg)
+        # print(response)
+        print(prediction)

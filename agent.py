@@ -1,12 +1,61 @@
 from bert.classifier import *
+import base64
+import requests
 
-def preprocess(sentence, qa_file='qa_pairs.txt'):
-    save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
-    qa_path = os.path.join(FLAGS.data_dir, qa_file)
-    qa_pairs = []
-    with open(save_path, 'w') as fout, open(qa_path, 'r') as fin:
-        a = []
-        for line in fin.readlines():
+
+def file_based_convert_examples_to_features(
+        examples, label_list, max_seq_length, tokenizer):
+    """Convert a set of `InputExample`s to a TFRecord file."""
+    serialized = []
+
+    for (ex_index, example) in enumerate(examples):
+        if ex_index % 10000 == 0:
+            tf.logging.info("Writing example %d of %d" % (ex_index, len(examples)))
+
+        feature = convert_single_example(ex_index, example, label_list,
+                                         max_seq_length, tokenizer)
+
+        def create_int_feature(values):
+            f = tf.train.Feature(int64_list=tf.train.Int64List(value=list(values)))
+            return f
+
+        features = collections.OrderedDict()
+        features["input_ids"] = create_int_feature(feature.input_ids)
+        features["input_mask"] = create_int_feature(feature.input_mask)
+        features["segment_ids"] = create_int_feature(feature.segment_ids)
+        features["label_ids"] = create_int_feature([feature.label_id])
+        # features["input_ids"] = feature.input_ids
+        # features["input_mask"] = feature.input_mask
+        # features["segment_ids"] = feature.segment_ids
+        # features["label_ids"] = [feature.label_id]
+
+        tf_example = tf.train.Example(features=tf.train.Features(feature=features))
+        # writer.write(tf_example.SerializeToString())
+        serialized_example = tf_example.SerializeToString()
+        serialized.append(serialized_example)
+        # features_list.append(features)
+    return serialized
+
+
+class PairMatchAgent:
+    def __init__(self, server_url='http://localhost:8501/v1/models/bert:predict'):
+        self.processor = MyProcessor()
+        self.server_url = server_url
+
+    def sort_and_retrive(self, predictions, qa_pairs):
+        res = []
+        for prediction, qa in zip(predictions, qa_pairs):
+            res.append((prediction[1], qa))
+        res.sort(reverse=True)
+        return res
+
+    def preprocess(self, sentence, qa_file='qa_pairs.txt'):
+        save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
+        qa_path = os.path.join(FLAGS.data_dir, qa_file)
+        qa_pairs = []
+        with open(save_path, 'w') as fout, open(qa_path, 'r') as fin:
+            a = []
+            for line in fin.readlines():
                 line = line.strip()
                 if len(line) == 0:
                     continue
@@ -22,80 +71,36 @@ def preprocess(sentence, qa_file='qa_pairs.txt'):
                     a = [line[2:]]
                 else:
                     a.append(line)
-        qa_pairs.append((q, a))
-    return qa_pairs
+            qa_pairs.append((q, a))
+        return qa_pairs
 
+    def create_request(self, serialized):
+        predict_request = '{"instances": ['
+        for i in range(len(serialized)):
+            if i == 0:
+                cur_string = '{"b64": "%s"}' % base64.b64encode(serialized[i]).decode()
+            else:
+                cur_string = ',{"b64": "%s"}' % base64.b64encode(serialized[i]).decode()
+            predict_request += cur_string
+        predict_request += ']}'
+        return predict_request
 
-def sort_and_retrive(predictions, qa_pairs):
-    res = []
-    for prediction, qa in zip(predictions, qa_pairs):
-        res.append((prediction[1], qa))
-    res.sort(reverse=True)
-    return res
+    def predict(self, sentence):
+        qa_pairs = self.preprocess(sentence)
+        predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
+        label_list = self.processor.get_labels()
+        tokenizer = tokenization.FullTokenizer(
+            vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
+        serialized = file_based_convert_examples_to_features(predict_examples, label_list,
+                                                             FLAGS.max_seq_length, tokenizer)
 
-
-class PairMatchAgent:
-    def __init__(self):
-        # qa_file:
-        # self.qa_pairs = self.load(qa_file)
-        self.classifier = Classifier()
-        tf.gfile.MakeDirs(FLAGS.output_dir)
-    # def load(self, qa_file):
-    #     qa_pairs = []
-    #     # this_type = 'q'
-    #     q = ''
-    #     a = []
-    #     id = 1
-    #     with open(qa_file, 'r') as fin:
-    #         for line in fin.readlines():
-    #             if not line or len(line.split()) == 0:
-    #                 continue
-    #             this_type = line[0]
-    #             line = line[1:].strip()
-    #             if this_type == 'q':
-    #                 if len(a) > 0:
-    #                     qa_pairs.append((q, a))
-    #                     a = []
-    #                 q = line
-    #             elif this_type == 'a':
-    #                 a.append(line)
-    #             else:
-    #                 print(id)
-    #                 print(this_type)
-    #                 print(line)
-    #                 raise ValueError('wrong type for line : %s ' % line)
-    #             id += 1
-    #     qa_pairs.append((q, a))
-    #     return qa_pairs
-
-    def record(self, sentence, mode="covered"):
-        assert mode in ['covered', 'missed']
-
-        if mode == 'covered':
-            with open('covered_records.txt', 'a') as fout:
-                fout.write(sentence+'\n')
-        else:
-            with open('missed_records.txt', 'a') as fout:
-                fout.write(sentence+'\n')
-
-    def reply(self, sentence):
-        # print('location: agent.reply')
-        # return a list of sentences
-        qa_pairs = preprocess(sentence)
-        # predict based on file generrated by
-        predictions = self.classifier.predict()
-        ranked_results = sort_and_retrive(predictions, qa_pairs)
-        # for k, v in self.qa_pairs:
-        #     if k in sentence:
-        #         self.record(sentence, mode='covered')
-        #         return v
-
-        # self.record(sentence, mode='missed')
-
-        # return ['本宝宝还小，知道的东西不多，这个问题去问人事组的小姐姐们吧～']
-        # print('finish agent.reply')
-        return ranked_results[0]
-
+        predict_request = self.create_request(serialized)
+        response = requests.post(self.server_url, data=predict_request)
+        response.raise_for_status()
+        response = response.json()
+        predictions = response['predictions']
+        result = self.sort_and_retrive(predictions=predictions, qa_pairs=qa_pairs)
+        return result[0]
 
 # if __name__ == '__main__':
 #     agent = PairMatchAgent()
@@ -106,4 +111,3 @@ class PairMatchAgent:
 #         ans = agent.reply(msg)
 #         for an in ans:
 #             print(an)
-
