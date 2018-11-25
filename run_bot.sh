@@ -31,7 +31,7 @@ TRAINED_CLASSIFIER=$home_dir/tmp/ynt_output/model.ckpt-119
 #  --output_dir=$home_dir/tmp/ynt_output/
 
 
-python3 run_bot.py \
+python3 bot.py \
   --data_dir=$GLUE_DIR/YNT \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
   --bert_config_file=$BERT_BASE_DIR/bert_config.json \

@@ -21,7 +21,7 @@ GLUE_DIR=$home_dir/glue_data
 
 TRAINED_CLASSIFIER=$home_dir/tmp/ynt_output/model.ckpt-119
 # EXPORT MODEL
-python3 run_export.py \
+python3 export.py \
   --task_name=YNT \
   --do_predict=true \
   --data_dir=$GLUE_DIR/YNT \

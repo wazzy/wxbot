@@ -20,7 +20,7 @@ GLUE_DIR=$home_dir/glue_data
 
 #TRAINED_CLASSIFIER=$home_dir/tmp/ynt_output/model.ckpt-119
 
-python3 run_client_test.py \
+python3 client_test.py \
   --data_dir=$GLUE_DIR/YNT \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
   --bert_config_file=$BERT_BASE_DIR/bert_config.json \
