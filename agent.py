@@ -37,6 +37,32 @@ def file_based_convert_examples_to_features(
     return serialized
 
 
+def preprocess(sentence, qa_file='qa_pairs.txt'):
+    save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
+    qa_path = os.path.join(FLAGS.data_dir, qa_file)
+    qa_pairs = []
+    with open(save_path, 'w') as fout, open(qa_path, 'r') as fin:
+        a = []
+        for line in fin.readlines():
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line.startswith('Q:'):
+                # write (0, sentence, candidates) to pred.tsv
+                out_line = '0\t' + sentence + '\t' + line + '\n'
+                fout.write(out_line)
+
+                if len(a) > 0:
+                    qa_pairs.append((q, a))
+                q = line[2:]
+            elif line.startswith('A:'):
+                a = [line[2:]]
+            else:
+                a.append(line)
+        qa_pairs.append((q, a))
+    return qa_pairs
+
+
 class PairMatchAgent:
     def __init__(self, server_url='http://localhost:8501/v1/models/bert:predict'):
         self.processor = MyProcessor()
@@ -48,31 +74,6 @@ class PairMatchAgent:
             res.append((prediction[1], qa))
         res.sort(reverse=True)
         return res
-
-    def preprocess(self, sentence, qa_file='qa_pairs.txt'):
-        save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
-        qa_path = os.path.join(FLAGS.data_dir, qa_file)
-        qa_pairs = []
-        with open(save_path, 'w') as fout, open(qa_path, 'r') as fin:
-            a = []
-            for line in fin.readlines():
-                line = line.strip()
-                if len(line) == 0:
-                    continue
-                if line.startswith('Q:'):
-                    # write (0, sentence, candidates) to pred.tsv
-                    out_line = '0\t' + sentence + '\t' + line + '\n'
-                    fout.write(out_line)
-
-                    if len(a) > 0:
-                        qa_pairs.append((q, a))
-                    q = line[2:]
-                elif line.startswith('A:'):
-                    a = [line[2:]]
-                else:
-                    a.append(line)
-            qa_pairs.append((q, a))
-        return qa_pairs
 
     def create_request(self, serialized):
         predict_request = '{"instances": ['
@@ -86,7 +87,7 @@ class PairMatchAgent:
         return predict_request
 
     def predict(self, sentence):
-        qa_pairs = self.preprocess(sentence)
+        qa_pairs = preprocess(sentence)
         predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
         label_list = self.processor.get_labels()
         tokenizer = tokenization.FullTokenizer(
