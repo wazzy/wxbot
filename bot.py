@@ -55,7 +55,7 @@ class WXBot(Bot):
         god = self.friends().search(god_name)[0]
         self.gods = {god}
 
-    def record(self, qa_pair, qa_file='qa_pairs'):
+    def add_record(self, qa_pair, qa_file='qa_pairs'):
         qa_path = os.path.join(FLAGS.data_dir, qa_file)
         with open(qa_path, 'a') as fout:
             q, ans = qa_pair
@@ -71,8 +71,10 @@ class WXBot(Bot):
         keep = False
         ans = []
         content_q = ''
-        with open(qa_path, 'r') as fout:
-            for line in fout.readlines():
+        find = False
+        with open(qa_path, 'r') as fin, open(qa_file+'.copy_last', 'w') as fout:
+            for line in fin.readlines():
+                fout.write(line)
                 if line.startswith('Q:'):
                     if len(ans) > 0 and content_q:
                         keeps.append((content_q, ans))
@@ -81,14 +83,23 @@ class WXBot(Bot):
                     if content_q != record:
                         keep = True
                     else:
+                        find = True
                         keep = False
                 else:
                     content_a = line.strip().split('A:')[-1]
                     if keep:
                         ans.append(content_a)
+        with open(qa_file, 'w') as fout:
+            for q, ans in keeps:
+                fout.write('Q:%s\n' % q)
+                fout.write('A:')
+                for a in ans:
+                    fout.write('%s\n' % a)
+        return find
 
     def reply_god(self, msg):
         text, _ = preprocess_raw_text(msg.text)
+        msg.chat.send('yes, my lord ~')
         if text.startswith('add_god:'):
             new_god_name = text.split('add_god:')[-1]
             new_god = self.friends().search(new_god_name)[0]
@@ -96,9 +107,11 @@ class WXBot(Bot):
             msg.chat.send('new god %s is added' % new_god.name)
         elif text.startswith('remove_record:'):
             record = text.split('remove_record:')[-1]
-            self.remove_record(record)
-            msg.chat.send('record is removed')
-        return
+            find = self.remove_record(record)
+            if find:
+                msg.chat.send('record is found and removed')
+            else:
+                msg.chat.send('record is not found')
 
     def reply_helper(self, msg):
         if not self.asking:
@@ -106,6 +119,10 @@ class WXBot(Bot):
             return
         if msg.text.lower() == 'end':
             msg.chat.send("收到～")
+            msg.chat.send("是否记录当前问答内容？（y/n）")
+        elif msg.text.lower() in ['y', 'n']:
+            if msg.text.lower() == 'y' and len(self.reply_cache) > 0:
+                self.add_record((self.msg_list[0].text, self.reply_cache))
             if len(self.reply_cache) > 0:
                 self.msg_list[0].chat.send('来自人事小姐姐的回答：')
                 self.msg_list[0].chat.send('问题： %s' % self.msg_list[0].text)
