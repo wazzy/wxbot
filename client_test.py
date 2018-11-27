@@ -122,33 +122,59 @@ class Client:
         res.sort(reverse=True)
         return res
 
-    def preprocess(self, sentence, qa_file='qa_pairs.txt'):
+    # def preprocess(self, sentence, qa_file='qa_pairs.txt'):
+    #     save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
+    #     qa_path = os.path.join(FLAGS.data_dir, qa_file)
+    #     qa_pairs = []
+    #     with open(save_path, 'w') as fout, open(qa_path, 'r') as fin:
+    #         a = []
+    #         for line in fin.readlines():
+    #             line = line.strip()
+    #             if len(line) == 0:
+    #                 continue
+    #             if line.startswith('Q:'):
+    #                 # write (0, sentence, candidates) to pred.tsv
+    #                 out_line = '0\t' + sentence + '\t' + line + '\n'
+    #                 fout.write(out_line)
+    #
+    #                 if len(a) > 0:
+    #                     qa_pairs.append((q, a))
+    #                 q = line[2:]
+    #             elif line.startswith('A:'):
+    #                 a = [line[2:]]
+    #             else:
+    #                 a.append(line)
+    #         qa_pairs.append((q, a))
+    #     return qa_pairs
+
+    def preprocess(self, sentence1, sentence2):
         save_path = os.path.join(FLAGS.data_dir, "pred.tsv")
-        qa_path = os.path.join(FLAGS.data_dir, qa_file)
-        qa_pairs = []
-        with open(save_path, 'w') as fout, open(qa_path, 'r') as fin:
-            a = []
-            for line in fin.readlines():
-                line = line.strip()
-                if len(line) == 0:
-                    continue
-                if line.startswith('Q:'):
-                    # write (0, sentence, candidates) to pred.tsv
-                    out_line = '0\t' + sentence + '\t' + line + '\n'
-                    fout.write(out_line)
+        # qa_pairs = []
+        with open(save_path, 'w') as fout:
+            out_line = '0\t' + sentence1 + '\t' + sentence2 + '\n'
+            fout.write(out_line)
+        #     a = []
+        #     for line in fin.readlines():
+        #         line = line.strip()
+        #         if len(line) == 0:
+        #             continue
+        #         if line.startswith('Q:'):
+        #             # write (0, sentence, candidates) to pred.tsv
+        #             out_line = '0\t' + sentence + '\t' + line + '\n'
+        #             fout.write(out_line)
+        #
+        #             if len(a) > 0:
+        #                 qa_pairs.append((q, a))
+        #             q = line[2:]
+        #         elif line.startswith('A:'):
+        #             a = [line[2:]]
+        #         else:
+        #             a.append(line)
+        #     qa_pairs.append((q, a))
+        # return qa_pairs
 
-                    if len(a) > 0:
-                        qa_pairs.append((q, a))
-                    q = line[2:]
-                elif line.startswith('A:'):
-                    a = [line[2:]]
-                else:
-                    a.append(line)
-            qa_pairs.append((q, a))
-        return qa_pairs
-
-    def predict(self, sentence):
-        qa_pairs = preprocess(sentence)
+    def predict(self, sentence1, sentence2):
+        self.preprocess(sentence1, sentence2)
         predict_examples = self.processor.get_pred_examples(FLAGS.data_dir)
         predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
         label_list = self.processor.get_labels()
@@ -189,7 +215,7 @@ class Client:
         # print(response.text)
         response.raise_for_status()
         response = response.json()
-        print(response)
+        # print(response)
         cost = time.time() - init
         print('total time cost: %s s' % cost)
 
@@ -209,9 +235,9 @@ class Client:
         # cost = time.time()-init
         # print('total time cost: %s s' % cost)
         predictions = response['predictions']
-        result = self.sort_and_retrive(predictions=predictions, qa_pairs=qa_pairs)
-        return result[0]
-
+        # result = self.sort_and_retrive(predictions=predictions, qa_pairs=qa_pairs)
+        # return result[0]
+        return predictions
 
 # def main():
 #   # Download the image
@@ -243,9 +269,10 @@ class Client:
 if __name__ == '__main__':
     client = Client()
     while True:
-        msg = input()
-        if msg is None:
+        msg1 = input()
+        msg2 = input()
+        if msg1 is None or msg2 is None:
             break
-        prediction = client.predict(msg)
+        prediction = client.predict(msg1, msg2)
         # print(response)
-        print(prediction)
+        print('probability: %s'%prediction[0][1])
