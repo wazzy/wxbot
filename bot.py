@@ -2,6 +2,7 @@ from wxpy import *
 from agent import *
 import time
 import re
+from random import randint
 
 # agent = PairMatchAgent()
 # turing = Tuling(api_key='25da5f49d4ad44d48a477543f0b3f55e')
@@ -10,6 +11,7 @@ import re
 # msg_list = []
 # # cache for multiple line answer from helper
 # msg_cache = []
+
 
 def preprocess_raw_text(raw_text):
     """return text and mode"""
@@ -31,36 +33,15 @@ def preprocess_raw_text(raw_text):
     return text, mode
 
 
-class Chat:
-    def __init__(self, name):
-        self.name = name
-
-    def send(self, text):
-        print('%s receive: %s' % (self.name, text))
-
-
-class MSG:
-    def __init__(self, type, chat_name, text=None):
-        self.type = type
-        self.text = text
-        self.chat = Chat(chat_name)
-
-    def get_file(self, save_path):
-        print('file download in %s' % save_path)
-
-    def forward(self, chat):
-        chat.send(self.text)
-
-
 class WXBot(Bot):
-    def __init__(self, helper_name='代号H', god_name='代号M', threshold=0.9, **kwargs):
+    def __init__(self, helper_name='helper', god_name='manager', threshold=0.9, **kwargs):
         super().__init__(**kwargs)
         # agent for qa task
         self.agent = PairMatchAgent()
         # agent for chitchat
         self.turing = Tuling(api_key='25da5f49d4ad44d48a477543f0b3f55e')
         # human assistant
-        self.helper = ensure_one(self.friends().search(helper_name))
+        self.helper = self.friends().search(helper_name)[0]
         # human master, won't be locked
         # self.master = ensure_one(self.friends().search(master_name))
         # list of msgs that are not answered yet
@@ -78,13 +59,22 @@ class WXBot(Bot):
         self.gods = {god}
         # waiting record decision
         self.waiting = False
-        # uncomment user message dict
+        # uncommented user message dict
         self.user_msg = {}
+        # bonus reminded
+        self.bonused = set()
 
     def get_save_path(self):
         date = time.strftime("%D:%H:%M:%S ", time.localtime(time.time()))
         save_name = '_'.join(re.split('[/:]', date))
-        save_path = os.path.join(FLAGS.data_dir+'/pictures', save_name)
+        save_path = os.path.join(FLAGS.data_dir + '/pictures', save_name)
+        temp_path = save_path
+        i = 1
+        # avoid name overlap when helper sends multiple images at once
+        while os.path.exists(temp_path+' '):
+            temp_path = save_path + '_' + str(i)
+            i += 1
+        save_path = temp_path
         return save_path
 
     def add_record(self, qa_pair, qa_file='qa_pairs.txt'):
@@ -107,7 +97,7 @@ class WXBot(Bot):
                     msg.get_file(save_path=save_path)
                     fout.write('PICTURE:%s\n' % save_path)
         # print('recorded')
-        return count+1
+        return count + 1
 
     def remove_record(self, record, qa_file='qa_pairs.txt'):
         qa_path = os.path.join(FLAGS.data_dir, qa_file)
@@ -116,7 +106,7 @@ class WXBot(Bot):
         ans = []
         content_q = ''
         find = False
-        with open(qa_path, 'r') as fin, open(qa_path+'.copy_last', 'w') as fout:
+        with open(qa_path, 'r') as fin, open(qa_path + '.copy_last', 'w') as fout:
             for line in fin.readlines():
                 fout.write(line)
                 if line.startswith('Q:'):
@@ -138,7 +128,10 @@ class WXBot(Bot):
                         if content_a.startswith('PICTURE:'):
                             path = content_a.split('PICTURE:')[-1]
                             # print('os.remove(path=path)')
-                            os.remove(path=path+' ')
+                            try:
+                                os.remove(path=path + ' ')
+                            except:
+                                os.remove(path=path)
             if len(ans) > 0 and content_q:
                 keeps.append((content_q, ans))
         count = 0
@@ -177,7 +170,9 @@ class WXBot(Bot):
         else:
             msg.chat.send('好的~')
 
-    def transfer_to_user(self):
+    def forward_to_user(self):
+        if self.msg_list[0].chat in self.user_msg:
+            del self.user_msg[self.msg_list[0].chat]
         if len(self.msg_cache) > 0:
             self.msg_list[0].chat.send('转自人事小姐姐的消息：')
             self.msg_list[0].chat.send('问题： %s' % self.msg_list[0].text)
@@ -192,15 +187,15 @@ class WXBot(Bot):
         if not self.asking:
             msg.chat.send('别说话，没问你问题呢~')
             return
-        if msg.text.lower() == 'end':
+        if msg.type == 'Text' and msg.text.lower() == 'end':
             msg.chat.send("收到～")
             msg.chat.send("是否记录当前问答内容？（y/n）")
             self.waiting = True
-        elif msg.text.lower() in ['y', 'n'] and self.waiting:
+        elif msg.type == 'Text' and msg.text.lower() in ['y', 'n'] and self.waiting:
             print('receive helper recording decision')
             self.waiting = False
             self.reply_record(msg)
-            self.transfer_to_user()
+            self.forward_to_user()
             if len(self.msg_list) > 0:
                 self.helper.send('来自%s的消息：%s' % (self.msg_list[0].chat.name, self.msg_list[0].text))
             else:
@@ -213,11 +208,16 @@ class WXBot(Bot):
         for line in ans:
             if line.startswith('PICTURE:'):
                 path = line.split('PICTURE:')[-1]
-                user.send_image(path+' ')
+                if os.path.exists(path):
+                    # hand add image
+                    user.send_image(path)
+                else:
+                    # auto add image
+                    user.send_image(path + ' ')
             else:
                 user.send(line)
 
-    def transfer_to_helper(self, msg):
+    def forward_to_helper(self, msg):
         self.locked_users.add(msg.chat)
         self.msg_list.append(msg)
         if not self.asking:
@@ -226,28 +226,36 @@ class WXBot(Bot):
 
     def reply_user(self, msg):
         text, mode = preprocess_raw_text(msg.text.lower())
+        # meaningless message
         if len(text) == 0:
             msg.chat.send('这让我怎么回答')
             return
 
+        if msg.chat in self.locked_users:
+            msg.chat.send('我去问问题的时候，所有新消息都不回复哦～')
+            return
+
+        # when user comment
         if msg.chat in self.user_msg and msg.text == '是':
             msg.chat.send('嘻嘻～')
             del self.user_msg[msg.chat]
             return
         elif msg.chat in self.user_msg and msg.text == '否':
             msg.chat.send('好吧，我再去问问人事小姐姐看')
-            self.transfer_to_helper(msg)
+            self.forward_to_helper(self.user_msg[msg.chat])
             return
         elif msg.chat in self.user_msg:
             msg.chat.send('麻烦先评价一下哦，回复是或否')
             return
+
         if mode == 'chitchat':
             self.turing.do_reply(msg)
+            # bonus
+            if randint(1, 8) == 1 and msg.chat not in self.bonused:
+                msg.chat.send('偷偷告诉你个秘密，消息前面带上小哥哥三个字就可以和我闲聊了。不要告诉别人哦～')
+                self.bonused.add(msg.chat)
             return
         else:
-            if msg.chat in self.locked_users:
-                msg.chat.send('我去问问题的时候，所有新消息都不回复哦～')
-                return
             certainty, qa_pair = self.agent.predict(msg.text)
             q, ans = qa_pair
             if mode == 'debug':
@@ -257,13 +265,12 @@ class WXBot(Bot):
                 self.send_user_ans(user=msg.chat, ans=ans)
             else:
                 if certainty < self.threshold:
-                    if msg.chat not in self.locked_users:
-                        msg.chat.send('这个问题我不太确定，我去问下哈')
-                    self.transfer_to_helper(msg)
+                    msg.chat.send('这个我不太懂，我去问下哈')
+                    self.forward_to_helper(msg)
                 else:
                     self.send_user_ans(msg.chat, ans)
-                    msg.chat.send('这个回答解决你的问题了吗？（是/否）')
                     self.user_msg[msg.chat] = msg
+                    msg.chat.send('这个回答解决你的问题了吗？（是/否）')
 
 
 bot = WXBot(console_qr=True)
@@ -272,7 +279,7 @@ friends = bot.friends()
 
 @bot.register(friends)
 def reply_my_friend(msg):
-    target = ensure_one(bot.friends().search('代号H'))
+    # target = ensure_one(bot.friends().search('代号H'))
     # if msg.chat == target and msg.type == 'Picture':
     #     print('test forward')
     #     msg.forward(target)
@@ -287,7 +294,8 @@ def reply_my_friend(msg):
     #     msg.chat.send('answer: ')
     #     bot.send_user_ans(user=msg.chat, ans=ans)
 
-    if msg.text.startswith('godmode') and msg.chat in bot.gods:
+    if msg.type == 'Text' and msg.text.startswith('godmode') and msg.chat in bot.gods:
+        print('reply god')
         bot.reply_god(msg)
     elif msg.chat == bot.helper:
         print('reply helper')
@@ -298,4 +306,3 @@ def reply_my_friend(msg):
 
 
 embed()
-

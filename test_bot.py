@@ -1,6 +1,27 @@
 from bot import *
 
 
+class Chat:
+    def __init__(self, name):
+        self.name = name
+
+    def send(self, text):
+        print('%s receive: %s' % (self.name, text))
+
+
+class MSG:
+    def __init__(self, type, chat_name, text=None):
+        self.type = type
+        self.text = text
+        self.chat = Chat(chat_name)
+
+    def get_file(self, save_path):
+        print('file download in %s' % save_path)
+
+    def forward(self, chat):
+        chat.send(self.text)
+
+
 def test_reply_god():
     add_god_msg = MSG(type='Text', text='godmode:add_god:Jone', chat_name='A')
     add_msg = MSG(type='Text', text='abc', chat_name='B')
